@@ -1,0 +1,132 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: prometheus-m3db-conf
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-m3db-conf
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-m3db-conf
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-m3db-conf
+  labels:
+    name: prometheus-m3db-conf
+data:
+  prometheus.yml: |-
+    global:
+      scrape_interval: 5s
+      evaluation_interval: 5s
+
+    remote_read:
+      - url: "http://m3coordinator.m3db.svc.cluster.local:7201/api/v1/prom/remote/read"
+        read_recent: true
+
+    remote_write:
+      - url: "http://m3coordinator.m3db.svc.cluster.local:7201/api/v1/prom/remote/write"
+        write_relabel_configs:
+          - target_label: metrics_storage
+            replacement: m3db_remote
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'ff-avalanche'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_avalanche_scrape ]
+            action: keep
+            regex: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-m3db-deployment
+  labels:
+    app: prometheus-m3db-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-m3db-server
+  template:
+    metadata:
+      labels:
+        app: prometheus-m3db-server
+    spec:
+      containers:
+        - name: prometheus-m3db
+          readinessProbe:
+            httpGet:
+              path: /graph
+              port: 9090
+          image: prom/prometheus
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-m3db-conf
+              mountPath: /etc/prometheus/
+      volumes:
+        - name: prometheus-m3db-conf
+          configMap:
+            defaultMode: 420
+            name: prometheus-m3db-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-m3db-service
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port:   '9090'
+spec:
+  selector:
+    app: prometheus-m3db-server
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 9090
+      nodePort: 30000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: prometheus-m3db-ui
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "prometheus-m3db-ip"
+spec:
+  backend:
+      serviceName: prometheus-m3db-service
+      servicePort: 8080

@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: avalanche
+---
+apiVersion: extensions/v1beta1 
+kind: Deployment
+metadata:
+  name: avalanche
+  namespace: avalanche
+  labels:
+    name: avalanche
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: avalanche
+      annotations:
+        avalanche/scrape: "true"
+    spec:
+      containers:
+      - name: avalanche
+        image: quay.io/freshtracks.io/avalanche:latest
+        args:
+        - "--metric-count=1000"
+        - "--series-count=50"
+        - "--port=9001"
+        ports:
+        - containerPort: 9001
