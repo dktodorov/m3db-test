@@ -36,14 +36,14 @@ resource "google_container_node_pool" "my_preemptible_nodes" {
   }
 }
 
-resource "google_compute_address" "ip_address" {
+resource "google_compute_address" "ip_address1" {
   name = "prometheus-m3db-ip"
 }
 
-resource "google_compute_address" "ip_address" {
+resource "google_compute_address" "ip_address2" {
   name = "prometheus-ip"
 }
 
-resource "google_compute_address" "ip_address" {
+resource "google_compute_address" "ip_address3" {
   name = "grafana-ip"
 }

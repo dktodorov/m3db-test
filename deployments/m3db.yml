@@ -23,7 +23,6 @@ spec:
         name: sysctl-setter
         securityContext:
           privileged: true
-# AUTOMATICALLY GENERATED (build_bundle.sh) - DO NOT EDIT
 ---
 apiVersion: v1
 kind: Namespace
