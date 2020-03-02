@@ -19,11 +19,11 @@ resource "google_container_node_pool" "my_preemptible_nodes" {
   name               = "test-cluster"
   location           = "europe-west3-c"
   cluster    = google_container_cluster.my.name
-  node_count = 1
+  node_count = 7
 
   node_config {
     preemptible  = true
-    machine_type = "n1-standard-2"
+    machine_type = "n1-highmem-2"
 
     metadata = {
       disable-legacy-endpoints = "true"
@@ -38,12 +38,15 @@ resource "google_container_node_pool" "my_preemptible_nodes" {
 
 resource "google_compute_address" "ip_address1" {
   name = "prometheus-m3db-ip"
+  region = "europe-west3"
 }
 
 resource "google_compute_address" "ip_address2" {
   name = "prometheus-ip"
+  region = "europe-west3"
 }
 
 resource "google_compute_address" "ip_address3" {
   name = "grafana-ip"
+  region = "europe-west3"
 }
