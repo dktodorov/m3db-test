@@ -3,11 +3,9 @@
 
 It appears that prometheus with m3db storage backend, consule almost two time more CPU/Memory. Also we need to take in mind, that m3db is consumming also CPU and Memory, and in our case scenario this was about 30G Memory and 6 CPU Cores.
 
-Prometheus Graphs (During Scraping)
-[![local](https://github.com/dktodorov/m3db-test/raw/master/img/screen-mutt-dark-th.png)](https://github.com/dktodorov/m3db-test/raw/master/img/prom-resources.png)
+[![Prometheus Graphs (During Scraping)](https://github.com/dktodorov/m3db-test/raw/master/img/screen-mutt-dark-th.png)](https://github.com/dktodorov/m3db-test/raw/master/img/prom-resources.png)
 
-Prometheus M3DB Graphs (During Scraping)
-[![m3db](https://github.com/dktodorov/m3db-test/raw/master/img/screen-mutt-dark-th.png)](https://github.com/dktodorov/m3db-test/raw/master/img/prom-m3db-resources.png)
+[![Prometheus M3DB Graphs (During Scraping)](https://github.com/dktodorov/m3db-test/raw/master/img/screen-mutt-dark-th.png)](https://github.com/dktodorov/m3db-test/raw/master/img/prom-m3db-resources.png)
 
 #### Query benchmark
 With `ab` i tried to benchmark prometheus query `{job="ff-avalanche"}` which fetch 12505 series
